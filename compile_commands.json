@@ -1,0 +1,40 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++17",
+      "-Wall",
+      "-O3",
+      "-Iinclude",
+      "-I/opt/homebrew/opt/portaudio/include",
+      "-I/opt/homebrew/opt/opus/include",
+      "-I/opt/homebrew/opt/enet/include",
+      "-c",
+      "-o",
+      "obj/main.o",
+      "src/main.cpp"
+    ],
+    "directory": "/Users/ismaeelbashir/Documents/projects/MarcoPolo",
+    "file": "/Users/ismaeelbashir/Documents/projects/MarcoPolo/src/main.cpp",
+    "output": "/Users/ismaeelbashir/Documents/projects/MarcoPolo/obj/main.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-c",
+      "-std=c++17",
+      "-Wall",
+      "-O3",
+      "-Iinclude",
+      "-I/opt/homebrew/opt/portaudio/include",
+      "-I/opt/homebrew/opt/opus/include",
+      "-I/opt/homebrew/opt/enet/include",
+      "-o",
+      "bin/voice_chat",
+      "src/main.cpp"
+    ],
+    "directory": "/Users/ismaeelbashir/Documents/projects/MarcoPolo",
+    "file": "/Users/ismaeelbashir/Documents/projects/MarcoPolo/src/main.cpp",
+    "output": "/Users/ismaeelbashir/Documents/projects/MarcoPolo/bin/voice_chat"
+  }
+]
