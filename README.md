@@ -12,11 +12,6 @@ I needed a real time audio chat for a project I was working on, so I decided to 
 
 ### Installation Dependencies
 
-#### Ubuntu/Debian
-```bash
-sudo apt-get install build-essential libportaudio2 libopus-dev libenet-dev
-```
-
 #### macOS (using Homebrew)
 ```bash
 brew install portaudio opus enet

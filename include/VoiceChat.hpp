@@ -6,6 +6,7 @@
 #include <portaudio.h>
 #include <opus/opus.h>
 #include <enet/enet.h>
+#include <algorithm>
 
 /**
  * Wrapper class for voice chat using Opus (audio codec) and ENet (networking/streaming).
@@ -50,7 +51,7 @@ private:
                                    unsigned long framesPerBuffer,
                                    const PaStreamCallbackTimeInfo* timeInfo,
                                    PaStreamCallbackFlags statusFlags, void* userData);
-
+                      
     ENetHost* enetHost;
     ENetPeer* enetPeer;
     PaStream* inputStream;
@@ -58,6 +59,8 @@ private:
     
     OpusEncoder* opusEncoder;
     OpusDecoder* opusDecoder;
+
+    bool isServer;
     
     std::thread networkThread;
     bool running;

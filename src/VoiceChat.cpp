@@ -92,33 +92,28 @@ void PrintLocalIPs() {
  | DE/CONSTRUCTORS |
  -------------------
  */
-VoiceChat::VoiceChat(const char* remoteIp, int port, bool isServer, bool debug) 
-    : enetHost(nullptr), enetPeer(nullptr), running(false) {
-    InitializeNetwork(); // setup network conifigs
-    this->debug = debug;
+ VoiceChat::VoiceChat(const char* remoteIp, int port, bool isServer, bool debug) 
+ : enetHost(nullptr), enetPeer(nullptr), isServer(isServer), running(false), debug(debug) {
+    InitializeNetwork();
     
-    // create ENet host and peer
     if (isServer) {
         ENetAddress address;
         address.host = ENET_HOST_ANY;
         address.port = port;
-        std::cout << "Creating server on port " << port << "\n";
         enetHost = enet_host_create(&address, 2, 2, 0, 0);
-        if (enetHost == nullptr) throw std::runtime_error("ENet host creation failed");
+        if (!enetHost) throw std::runtime_error("ENet host creation failed");
         PrintLocalIPs();
     } else {
         enetHost = enet_host_create(nullptr, 1, 2, 0, 0);
-        if (enetHost == nullptr) throw std::runtime_error("ENet host creation failed");
+        if (!enetHost) throw std::runtime_error("ENet host creation failed");
         ENetAddress address;
         enet_address_set_host(&address, remoteIp);
         address.port = port;
-        std::cout << "Connecting to " << remoteIp << ":" << port << "\n";
         enetPeer = enet_host_connect(enetHost, &address, 2, 0);
-        if (enetPeer == nullptr) throw std::runtime_error("ENet peer connection failed");
-        std::cout << "Connected to " << remoteIp << ":" << port << "\n";
+        if (!enetPeer) throw std::runtime_error("ENet peer connection failed");
     }
 
-    // create opus encoder/decoder
+    // Opus initialization remains the same
     int error;
     opusEncoder = opus_encoder_create(sampleRate, channels, OPUS_APPLICATION_VOIP, &error);
     opus_encoder_ctl(opusEncoder, OPUS_SET_BITRATE(bitrate));
@@ -231,18 +226,19 @@ void VoiceChat::SetVolume(float distance) {
  | PACKET INGESTION |
  --------------------
  */
-void VoiceChat::NetworkThread() {
+ void VoiceChat::NetworkThread() {
     while (running) {
         ENetEvent event;
         while (enet_host_service(enetHost, &event, 10) > 0) {
             switch (event.type) {
-
-                // handle new peer connection
                 case ENET_EVENT_TYPE_CONNECT:
                     std::cout << "Connected to peer\n";
+                    if (isServer) {
+                        enetPeer = event.peer; // Store the connected peer for the server
+                        std::cout << "Server registered peer\n";
+                    }
                     break;
                 
-                // handle incoming packets
                 case ENET_EVENT_TYPE_RECEIVE: {
                     std::vector<float> pcm(frameSize);
                     int decoded = opus_decode_float(opusDecoder, 
