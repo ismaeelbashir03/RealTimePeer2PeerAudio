@@ -18,7 +18,7 @@ else
     LDFLAGS += -L/usr/lib/x86_64-linux-gnu
 endif
 
-LDFLAGS += -lportaudio -lopus -lenet
+LDFLAGS += -lportaudio -lopus -lenet -lpthread
 
 SRC_DIR = src
 INC_DIR = include
