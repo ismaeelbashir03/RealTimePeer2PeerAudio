@@ -1,6 +1,92 @@
 #include "VoiceChat.hpp"
 #include <iostream>
 
+
+/*
+ -------------------
+ | DEBUG IP ADDRESS |
+ -------------------
+ */
+#include <iostream>
+#ifdef _WIN32
+    #include <winsock2.h>
+    #include <iphlpapi.h>
+    #include <ws2tcpip.h>
+    #pragma comment(lib, "Ws2_32.lib")
+    #pragma comment(lib, "Iphlpapi.lib")
+#else
+    #include <sys/types.h>
+    #include <ifaddrs.h>
+    #include <arpa/inet.h>
+    #include <netinet/in.h>
+    #include <netdb.h>
+#endif
+
+void PrintLocalIPs() {
+#ifdef _WIN32
+    // Initialize Winsock
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
+        std::cerr << "WSAStartup failed\n";
+        return;
+    }
+
+    // Retrieve adapter addresses
+    ULONG flags = GAA_FLAG_INCLUDE_PREFIX;
+    ULONG family = AF_INET;
+    ULONG bufferSize = 15000;
+    PIP_ADAPTER_ADDRESSES adapterAddresses = (IP_ADAPTER_ADDRESSES*)malloc(bufferSize);
+    if (adapterAddresses == nullptr) {
+        std::cerr << "Memory allocation failed\n";
+        WSACleanup();
+        return;
+    }
+
+    DWORD dwRetVal = GetAdaptersAddresses(family, flags, NULL, adapterAddresses, &bufferSize);
+    if (dwRetVal == ERROR_BUFFER_OVERFLOW) {
+        free(adapterAddresses);
+        adapterAddresses = (IP_ADAPTER_ADDRESSES*)malloc(bufferSize);
+        dwRetVal = GetAdaptersAddresses(family, flags, NULL, adapterAddresses, &bufferSize);
+    }
+
+    if (dwRetVal == NO_ERROR) {
+        for (PIP_ADAPTER_ADDRESSES adapter = adapterAddresses; adapter != nullptr; adapter = adapter->Next) {
+            for (PIP_ADAPTER_UNICAST_ADDRESS ua = adapter->FirstUnicastAddress; ua != nullptr; ua = ua->Next) {
+                if (ua->Address.lpSockaddr->sa_family == AF_INET) {
+                    sockaddr_in* sa_in = reinterpret_cast<sockaddr_in*>(ua->Address.lpSockaddr);
+                    char ipAddress[INET_ADDRSTRLEN];
+                    inet_ntop(AF_INET, &(sa_in->sin_addr), ipAddress, INET_ADDRSTRLEN);
+                    std::cout << "Interface: " << adapter->FriendlyName 
+                              << " - IP: " << ipAddress << "\n";
+                }
+            }
+        }
+    } else {
+        std::cerr << "GetAdaptersAddresses() failed with error: " << dwRetVal << "\n";
+    }
+    
+    free(adapterAddresses);
+    WSACleanup();
+#else
+    struct ifaddrs *ifaddr, *ifa;
+    if (getifaddrs(&ifaddr) == -1) {
+        perror("getifaddrs");
+        return;
+    }
+    
+    for (ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == nullptr) continue;
+        if (ifa->ifa_addr->sa_family == AF_INET) { // IPv4
+            char addrBuffer[INET_ADDRSTRLEN];
+            void* addrPtr = &((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
+            inet_ntop(AF_INET, addrPtr, addrBuffer, INET_ADDRSTRLEN);
+            std::cout << "Interface: " << ifa->ifa_name << " - IP: " << addrBuffer << "\n";
+        }
+    }
+    freeifaddrs(ifaddr);
+#endif
+}
+
 /*
  -------------------
  | DE/CONSTRUCTORS |
@@ -16,13 +102,20 @@ VoiceChat::VoiceChat(const char* remoteIp, int port, bool isServer, bool debug)
         ENetAddress address;
         address.host = ENET_HOST_ANY;
         address.port = port;
+        std::cout << "Creating server on port " << port << "\n";
         enetHost = enet_host_create(&address, 2, 2, 0, 0);
+        if (enetHost == nullptr) throw std::runtime_error("ENet host creation failed");
+        PrintLocalIPs();
     } else {
         enetHost = enet_host_create(nullptr, 1, 2, 0, 0);
+        if (enetHost == nullptr) throw std::runtime_error("ENet host creation failed");
         ENetAddress address;
         enet_address_set_host(&address, remoteIp);
         address.port = port;
+        std::cout << "Connecting to " << remoteIp << ":" << port << "\n";
         enetPeer = enet_host_connect(enetHost, &address, 2, 0);
+        if (enetPeer == nullptr) throw std::runtime_error("ENet peer connection failed");
+        std::cout << "Connected to " << remoteIp << ":" << port << "\n";
     }
 
     // create opus encoder/decoder
