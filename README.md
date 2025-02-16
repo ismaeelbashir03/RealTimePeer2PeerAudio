@@ -1,6 +1,6 @@
 # Low-Latency Peer-to-Peer Voice Chat
 
-A C++ implementation of a low-latency local network voice chat system using PortAudio, Opus, and ENet libraries. Made for direct peer-to-peer communication with minimal (I hope) latency.
+I needed a real time audio chat for a project I was working on, so I decided to make one myself. This is a simple C++ implementation of a low-latency local network voice chat system using PortAudio, Opus, and ENet libraries. It is made for peer-to-peer communication with minimal (I hope) latency.
 
 ## Prerequisites
 
