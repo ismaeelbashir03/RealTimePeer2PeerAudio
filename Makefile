@@ -13,6 +13,11 @@ ifeq ($(UNAME_S),Darwin)
     CXXFLAGS += $(BREW_INCLUDES)
     LDFLAGS += $(BREW_LIBS)
 
+# windows
+else ifneq (,$(filter MINGW% CYGWIN% MSYS%,$(UNAME_S)))
+    CXXFLAGS += -Iinclude
+    LDFLAGS += -Llib -lws2_32 -lwinmm
+
 # linux
 else
     LDFLAGS += -L/usr/lib/x86_64-linux-gnu
