@@ -32,7 +32,7 @@ LIB_DIR = lib
 BIN_DIR = bin
 
 TARGET = $(BIN_DIR)/voice_chat
-SRCS = $(wildcard $(SRC_DIR)/*.cpp)
+SRCS = $(filter-out $(SRC_DIR)/main.cpp, $(wildcard $(SRC_DIR)/*.cpp)) # dont include main in lib
 OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
 LIB_NAME = libvoicechat.a
 LIB_TARGET = $(LIB_DIR)/$(LIB_NAME)
@@ -41,11 +41,14 @@ $(shell mkdir -p $(OBJ_DIR) $(LIB_DIR) $(BIN_DIR))
 
 all: $(TARGET)
 
-$(TARGET): $(OBJS) $(LIB_TARGET)
-	$(CXX) $(CXXFLAGS) -o $@ $(SRC_DIR)/main.cpp $(LDFLAGS) # doesn't this compite main twice?
+$(TARGET): $(LIB_TARGET) $(OBJ_DIR)/main.o
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJ_DIR)/main.o $(LDFLAGS)
 
 $(LIB_TARGET): $(OBJS)
 	ar rcs $@ $(OBJS)
+
+$(OBJ_DIR)/main.o: $(SRC_DIR)/main.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
