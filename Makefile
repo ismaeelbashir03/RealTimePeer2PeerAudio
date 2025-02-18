@@ -13,6 +13,11 @@ ifeq ($(UNAME_S),Darwin)
     CXXFLAGS += $(BREW_INCLUDES)
     LDFLAGS += $(BREW_LIBS)
 
+# windows
+else ifneq (,$(filter MINGW% CYGWIN% MSYS%,$(UNAME_S)))
+    CXXFLAGS += -Iinclude
+    LDFLAGS += -Llib -lws2_32 -lwinmm
+
 # linux
 else
     LDFLAGS += -L/usr/lib/x86_64-linux-gnu
@@ -37,7 +42,7 @@ $(shell mkdir -p $(OBJ_DIR) $(LIB_DIR) $(BIN_DIR))
 all: $(TARGET)
 
 $(TARGET): $(OBJS) $(LIB_TARGET)
-	$(CXX) $(CXXFLAGS) -o $@ $(SRC_DIR)/main.cpp $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $(SRC_DIR)/main.cpp $(LDFLAGS) # doesn't this compite main twice?
 
 $(LIB_TARGET): $(OBJS)
 	ar rcs $@ $(OBJS)
