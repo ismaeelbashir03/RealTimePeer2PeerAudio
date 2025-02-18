@@ -126,6 +126,9 @@ VoiceChat::~VoiceChat() {
     opus_encoder_destroy(opusEncoder);
     opus_decoder_destroy(opusDecoder);
     if (enetHost) enet_host_destroy(enetHost);
+    #ifdef _WIN32
+        WSACleanup();
+    #endif
 }
 
 
@@ -139,6 +142,13 @@ void VoiceChat::InitializeNetwork() {
     if (enet_initialize() != 0) {
         throw std::runtime_error("ENet initialization failed");
     }
+
+    #ifdef _WIN32
+        WSAData wsaData;
+        if WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+            throw std::runtime_error("WSAStartup failed");
+        }
+    #endif
 }
 
 void VoiceChat::InitializeAudio() {
