@@ -17,15 +17,29 @@ I needed a real time audio chat for a project I was working on, so I decided to 
 brew install portaudio opus enet
 ```
 
+#### windows (using vckpg)
+```bash
+vcpkg install portaudio opus enet
+```
+
 ## Building the Project
 ```
 git clone https://github.com/ismaeelbashir03/p2p-voice-chat.git
 cd p2p-voice-chat
+```
+#### For macOS/Linux:
+```
 make
+```
+
+#### For Windows:
+```
+mingw32-make
 ```
 
 ## Usage
 Running the server:
+#### For macOS/Linux
 ```
 ./bin/voice_chat server <PORT>
 ```
@@ -33,4 +47,15 @@ Running the server:
 Running the client:
 ```
 ./bin/voice_chat client <SERVER_IP> <PORT>
+```
+
+#### For windows:
+Running the server:
+```
+bin/voice_chat.exe server <PORT>
+```
+
+Running the client:
+```
+bin/voice_chat.exe client <SERVER_IP> <PORT>
 ```
